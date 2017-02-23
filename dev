@@ -1,0 +1,32 @@
+#!/bin/bash
+
+CURRENT_DIR=$(pwd)
+
+function find-compose-file () {
+  path=$(pwd)
+  while [[ "$path" != "" && ! -e "$path/docker-compose.yml" ]]; do
+    path=${path%/*}
+  done
+  return "$path"
+}
+
+case "$1" in
+    stats)
+        docker stats --format="table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.MemPerc}}\t{{.NetIO}}\t{{.BlockIO}}\t{{.PIDs}}"
+        ;;
+    run)
+        docker exec -it "${@:2}"
+        ;;
+    up)
+        COMPOSE_PATH=find-compose-file
+
+        if [ -f "$COMPOSE_PATH" ]; then
+            docker-compose up -d "${@:2}"
+        else
+            echo "No docker-compose.yml file found in the current or any parent directory"
+        fi
+        ;;
+    *)
+        echo "Usage: $0 {stats|run}"
+        ;;
+esac
