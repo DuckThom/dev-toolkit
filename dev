@@ -1,13 +1,26 @@
 #!/bin/bash
 
 CURRENT_DIR=$(pwd)
+COMPOSE_PATH=""
+
+function create-symlink () {
+    echo 'dev was not found in $PATH'
+    echo "Would you like to create a symlink from $CURRENT_DIR/dev to $HOME/.bin/dev ?"
+
+    echo "Press enter to continue, Ctrl-C to quit"
+    read
+
+    ln -s "$CURRENT_DIR/dev" "$HOME/.bin/dev" || exit 1
+}
+
+which dev >> /dev/null 2>&1 || create-symlink
 
 function find-compose-file () {
-  path=$(pwd)
-  while [[ "$path" != "" && ! -e "$path/docker-compose.yml" ]]; do
-    path=${path%/*}
-  done
-  return "$path"
+    COMPOSE_PATH=$CURRENT_DIR
+
+    while [[ "$COMPOSE_PATH" != "" && ! -e "$COMPOSE_PATH/docker-compose.yml" ]]; do
+        COMPOSE_PATH=${COMPOSE_PATH%/*}
+    done
 }
 
 case "$1" in
@@ -18,15 +31,26 @@ case "$1" in
         docker exec -it "${@:2}"
         ;;
     up)
-        COMPOSE_PATH=find-compose-file
+        find-compose-file
 
-        if [ -f "$COMPOSE_PATH" ]; then
+        if [ -f "$COMPOSE_PATH/docker-compose.yml" ]; then
+            cd "$COMPOSE_PATH"
             docker-compose up -d "${@:2}"
+            cd "$CURRENT_DIR"
         else
             echo "No docker-compose.yml file found in the current or any parent directory"
         fi
         ;;
     *)
-        echo "Usage: $0 {stats|run}"
+        echo "Usage: dev {stats|run|up}"
+        echo
+        echo "stats    : Run docker stats and display the container name instead of the id"
+        echo "         : usage: dev stats"
+        echo
+        echo "run      : Execute a command in the specified container"
+        echo "         : usage: dev run <container> [command]"
+        echo
+        echo "up       : Bring docker compose services up and look in any parent dir for a compose file"
+        echo "         : usage: dev up [service]"
         ;;
 esac
