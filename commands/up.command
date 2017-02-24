@@ -1,4 +1,4 @@
-COMMAND="up"
+COMMAND="up [service]"
 HELP_TEXT="Bring Docker Compose services up"
 
 COMPOSE_PATH=""
