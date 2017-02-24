@@ -5,18 +5,32 @@ BASE_PATH=$(dirname $(readlink -f $0))
 COMMANDS_PATH=""
 declare -A COMMANDS
 
+##
+# Create a symlink for the dev script
+#
 function create-symlink () {
-    echo 'dev was not found in $PATH'
-    echo "Would you like to create a symlink from $CURRENT_DIR/dev to $HOME/.bin/dev ?"
+    echo "The 'dev' script was not found in your \$PATH"
+    echo "Would you like to create a symlink? $HOME/.bin/dev => $CURRENT_DIR/dev ?"
 
     echo "Press enter to continue, Ctrl-C to quit"
     read
 
+    if [ ! -d "$HOME/.bin" ]; then
+        mkdir "$HOME/.bin"
+    fi
+
     ln -s "$CURRENT_DIR/dev" "$HOME/.bin/dev" || exit 1
+
+    echo "Symlink created, make sure that '$HOME/.bin' is in your \$PATH!"
+    exit 0
 }
 
 which dev >> /dev/null 2>&1 || create-symlink
 
+##
+# Load the commands defined in the commands dir
+# where the 'dev' script is located
+#
 function load-global-commands () {
     while IFS= read -r -d $'\0' line; do
         source "$line"
@@ -25,6 +39,10 @@ function load-global-commands () {
     done < <(find "$BASE_PATH" -type f -iname "*.command" -print0)
 }
 
+##
+# Load the commands defined in the 'dev-commands' folder
+# which can be located in the current or any parent dir
+#
 function load-local-commands () {
     COMMANDS_PATH=$CURRENT_DIR
 
@@ -41,6 +59,9 @@ function load-local-commands () {
     fi
 }
 
+##
+# Generate the usage screen
+#
 function show-usage () {
     echo "Usage: dev <command>"
     echo
