@@ -1,7 +1,9 @@
 #!/bin/bash
 
 CURRENT_DIR=$(pwd)
-COMPOSE_PATH=""
+BASE_PATH=$(dirname $(readlink -f $0))
+COMMANDS_PATH=""
+declare -A COMMANDS
 
 function create-symlink () {
     echo 'dev was not found in $PATH'
@@ -15,42 +17,50 @@ function create-symlink () {
 
 which dev >> /dev/null 2>&1 || create-symlink
 
-function find-compose-file () {
-    COMPOSE_PATH=$CURRENT_DIR
+function load-global-commands () {
+    while IFS= read -r -d $'\0' line; do
+        source "$line"
 
-    while [[ "$COMPOSE_PATH" != "" && ! -e "$COMPOSE_PATH/docker-compose.yml" ]]; do
-        COMPOSE_PATH=${COMPOSE_PATH%/*}
+        COMMANDS[$COMMAND]="$HELP_TEXT"
+    done < <(find "$BASE_PATH" -type f -iname "*.command" -print0)
+}
+
+function load-local-commands () {
+    COMMANDS_PATH=$CURRENT_DIR
+
+    while [[ "$COMMANDS_PATH" != "" && ! -e "$COMMANDS_PATH/dev-commands" ]]; do
+        COMMANDS_PATH=${COMMANDS_PATH%/*}
+    done
+
+    if [ -d "$COMMANDS_PATH" ]; then
+        while IFS= read -r -d $'\0' line; do
+            source "$line"
+
+            COMMANDS[$COMMAND]="$HELP_TEXT"
+        done < <(find "$COMMANDS_PATH" -type f -iname "*.command" -print0)
+    fi
+}
+
+function show-usage () {
+    echo "Usage: dev <command>"
+    echo
+    echo "Available commands:"
+    echo
+
+    for i in "${!COMMANDS[@]}"
+    do
+        echo "$i:"
+        echo "    ${COMMANDS[$i]}"
+        echo
     done
 }
 
-case "$1" in
-    stats)
-        docker stats --format="table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.MemPerc}}\t{{.NetIO}}\t{{.BlockIO}}\t{{.PIDs}}"
-        ;;
-    run)
-        docker exec -it "${@:2}"
-        ;;
-    up)
-        find-compose-file
+load-global-commands
+load-local-commands
 
-        if [ -f "$COMPOSE_PATH/docker-compose.yml" ]; then
-            cd "$COMPOSE_PATH"
-            docker-compose up -d "${@:2}"
-            cd "$CURRENT_DIR"
-        else
-            echo "No docker-compose.yml file found in the current or any parent directory"
-        fi
-        ;;
-    *)
-        echo "Usage: dev {stats|run|up}"
-        echo
-        echo "stats    : Run docker stats and display the container name instead of the id"
-        echo "         : usage: dev stats"
-        echo
-        echo "run      : Execute a command in the specified container"
-        echo "         : usage: dev run <container> [command]"
-        echo
-        echo "up       : Bring docker compose services up and look in any parent dir for a compose file"
-        echo "         : usage: dev up [service]"
-        ;;
-esac
+if [ "$1" == "" ]; then
+    show-usage
+    exit 0
+fi
+
+eval "${@:1}" 2>/dev/null || show-usage
