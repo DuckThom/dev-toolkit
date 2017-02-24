@@ -8,7 +8,7 @@ function up () {
 
     if [ -f "$COMPOSE_PATH/docker-compose.yml" ]; then
         cd "$COMPOSE_PATH"
-        docker-compose up -d "${@:2}"
+        docker-compose up -d "${@:1}"
         cd "$CURRENT_DIR"
     else
         echo "No docker-compose.yml file found in the current or any parent directory"
