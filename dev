@@ -50,12 +50,14 @@ function load-local-commands () {
         COMMANDS_PATH=${COMMANDS_PATH%/*}
     done
 
+    COMMANDS_PATH="$COMMANDS_PATH/dev-commands"
+
     if [ -d "$COMMANDS_PATH" ]; then
         while IFS= read -r -d $'\0' line; do
             source "$line"
 
             COMMANDS[$COMMAND]="$HELP_TEXT"
-        done < <(find "$COMMANDS_PATH" -type f -iname "*.command" -print0)
+        done < <(find "$COMMANDS_PATH" -maxdepth 1 -type f -iname "*.command" -print0)
     fi
 }
 
