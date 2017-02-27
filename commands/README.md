@@ -17,7 +17,7 @@ Filename: `command_name.command`
 
 Contents:
 ```
-COMMMAND="command <required_arg> [optional_arg]"
+COMMMAND="command_name <required_arg> [optional_arg]"
 HELP_TEXT="This will be displayed as a short help text for the command"
 
 function command_name () {
