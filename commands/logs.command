@@ -1,6 +1,6 @@
 COMMAND="logs <service>"
-HELP_TEXT="Alias for 'docker-compose logs -f'"
+HELP_TEXT="Alias for 'docker logs -f'"
 
 function logs () {
-    docker-compose logs -f "${@:1}"
+    docker logs -f "${@:1}"
 }
