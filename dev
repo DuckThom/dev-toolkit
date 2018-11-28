@@ -72,8 +72,11 @@ function show-usage () {
 
     for i in "${!COMMANDS[@]}"
     do
+        echo -en "\e[32m" # Green
         echo "$i:"
+        echo -en "\e[36m" # Cyan
         echo "    ${COMMANDS[$i]}"
+        echo -en "\e[39m" # Reset to default
         echo
     done
 }
