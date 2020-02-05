@@ -6,6 +6,11 @@ function run-all() {
     SERVICE_COUNT="$(docker-compose ps -q $SERVICE | wc -l)"
     TMUX_CMD=""
 
+    if [ -z "$RUN_USER" ]
+    then
+        RUN_USER=root
+    fi
+
     if [[ "$SERVICE_COUNT" == "0" ]]
     then
         echo "No running instances found for service '$SERVICE'"
@@ -21,7 +26,7 @@ function run-all() {
             TMUX_CMD="$TMUX_CMD split-window -h"
         fi
 
-        TMUX_CMD="$TMUX_CMD 'docker-compose exec --index=$i $SERVICE "${@:2}"' \\;"
+        TMUX_CMD="$TMUX_CMD 'docker-compose exec --user="$RUN_USER" --index=$i $SERVICE "${@:2}"' \\;"
     done
 
     eval "tmux $TMUX_CMD"
