@@ -1,7 +1,20 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+if [ $BASH_VERSINFO -lt 4 ]
+then
+    echo "This script requires at least bash version 4"
+    exit 1
+fi
+
+if [ `uname -s` == 'Darwin' ]
+then
+    READLINK_BIN=`which greadlink`
+else
+    READLINK_BIN=`which readlink`
+fi
 
 CURRENT_DIR=$(pwd)
-BASE_PATH=$(dirname $(readlink -f $0))
+BASE_PATH=$(dirname $($READLINK_BIN -f $0))
 COMMANDS_PATH=""
 declare -A COMMANDS
 
