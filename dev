@@ -10,18 +10,18 @@ declare -A COMMANDS
 #
 function create-symlink () {
     echo "The 'dev' script was not found in your \$PATH"
-    echo "Would you like to create a symlink? $HOME/.bin/dev => $CURRENT_DIR/dev ?"
+    echo "Would you like to create a symlink? $HOME/.local/bin/dev => $CURRENT_DIR/dev ?"
 
     echo "Press enter to continue, Ctrl-C to quit"
     read
 
-    if [ ! -d "$HOME/.bin" ]; then
-        mkdir "$HOME/.bin"
+    if [ ! -d "$HOME/.local/bin" ]; then
+        mkdir "$HOME/.local/bin"
     fi
 
-    ln -s "$CURRENT_DIR/dev" "$HOME/.bin/dev" || exit 1
+    ln -s "$CURRENT_DIR/dev" "$HOME/.local/bin/dev" || exit 1
 
-    echo "Symlink created, make sure that '$HOME/.bin' is in your \$PATH!"
+    echo "Symlink created, make sure that '$HOME/.local/bin' is in your \$PATH!"
     exit 0
 }
 
