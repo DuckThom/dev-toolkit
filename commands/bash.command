@@ -6,7 +6,13 @@ LINES="$(tput lines)"
 DOCKERAPPEND=""
 
 function bash() {
+    SERVICE="$1"
     USER="$2"
+
+    if [ "$USER" == "" ] && [ "$SERVICE" == "app" ]
+    then
+        USER="www-data"
+    fi
 
     if [ "$USER" != "" ]; then
         DOCKERAPPEND="$DOCKERAPPEND -u $USER"

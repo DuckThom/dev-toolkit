@@ -8,7 +8,12 @@ function run-all() {
 
     if [ -z "$RUN_USER" ]
     then
-        RUN_USER=root
+        if [ "$SERVICE" == "app" ]
+        then
+            RUN_USER="www-data"
+        else
+            RUN_USER="root"
+        fi
     fi
 
     if [[ "$SERVICE_COUNT" == "0" ]]
